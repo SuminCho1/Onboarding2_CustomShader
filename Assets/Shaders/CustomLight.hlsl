@@ -3,7 +3,7 @@
 
 float3 IncomingLight(Surface surface, Light light)
 {
-    return saturate(dot(surface.normal, light.direction)) * light.color;
+    return saturate(dot(surface.normal, light.direction) * light.distanceAttenuation) * light.color;
 }
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light)
@@ -19,7 +19,10 @@ float3 GetLighting(Surface surface, float3 positionWS, BRDF brdf)
 
     int additionalLightCount = GetAdditionalLightsCount();
     for (int i = 0; i < additionalLightCount; ++i)
-        color += GetLighting(surface, brdf, GetAdditionalLight(i, positionWS));
+    {
+        Light addtionalLight = GetAdditionalLight(i, positionWS);
+        color += GetLighting(surface, brdf, addtionalLight);
+    }
     
     return color;
 }

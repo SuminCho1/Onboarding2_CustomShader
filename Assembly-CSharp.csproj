@@ -45,7 +45,6 @@
      <None Include="Assets\Shaders\BRDF.hlsl" />
      <None Include="Assets\Shaders\CustomLit.shader" />
      <None Include="Assets\Shaders\Surface.hlsl" />
-     <None Include="Assets\Shaders\Lighting.hlsl" />
      <None Include="Assets\Shaders\CustomLitForwardPass.hlsl" />
      <None Include="Assets\Shaders\CustomLight.hlsl" />
      <Reference Include="UnityEngine">
