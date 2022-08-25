@@ -11,7 +11,7 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
 
-float3 GetLighting(Surface surface, float3 positionWS, BRDF brdf)
+float3 GetLighting(Surface surface, float3 positionWS, BRDF brdf, CustomGI gi)
 {
     float3 color = 0.0f;
 
@@ -23,6 +23,8 @@ float3 GetLighting(Surface surface, float3 positionWS, BRDF brdf)
         Light addtionalLight = GetAdditionalLight(i, positionWS);
         color += GetLighting(surface, brdf, addtionalLight);
     }
+
+    color = gi.diffuse;
     
     return color;
 }

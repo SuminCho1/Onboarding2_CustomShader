@@ -29,6 +29,11 @@ Shader "Custom/Lit"
 
     SubShader
     {
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
+        #include "Assets/Shaders/LitInput.hlsl"
+        ENDHLSL
+        
         Tags {"RenderType" = "Opaque" "IgnoreProjector" = "True" "RenderPipeline" = "UniversalPipeline" "ShaderModel"="4.5"}
         LOD 100
 
@@ -47,10 +52,10 @@ Shader "Custom/Lit"
             #pragma shader_feature_local_fragment _SURFACE_TYPE_TRANSPARENT
             #pragma shader_feature_local_fragment _ALPHATEST_ON
             #pragma shader_feature_local_fragment _ALPHAPREMULTIPLY_ON
-
+            
             // -------------------------------------
             // Unity defined keywords
-            #pragma multi_compile_fog
+            #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile_instancing
             #pragma multi_compile _ DOTS_INSTANCING_ON
             #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION

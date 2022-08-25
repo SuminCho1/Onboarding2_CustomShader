@@ -42,7 +42,12 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
+     <Compile Include="Assets\Scripts\CameraRenderer.cs" />
+     <Compile Include="Assets\Scripts\CustomRenderPipelineAsset.cs" />
+     <Compile Include="Assets\Scripts\CustomRenderPipeline.cs" />
+     <None Include="Assets\Shaders\CustomGI.hlsl" />
      <None Include="Assets\Shaders\BRDF.hlsl" />
+     <None Include="Assets\Shaders\LitInput.hlsl" />
      <None Include="Assets\Shaders\CustomLit.shader" />
      <None Include="Assets\Shaders\Surface.hlsl" />
      <None Include="Assets\Shaders\CustomLitForwardPass.hlsl" />
