@@ -1,31 +1,43 @@
 #ifndef CUSTOM_LIGHT_INCLUDED
 #define CUSTOM_LIGHT_INCLUDED
 
-float3 IncomingLight(Surface surface, Light light)
+#define MAX_DIRECTIONAL_LIGHT_COUNT 4
+
+CBUFFER_START(_CustomLight)
+    int _DirectionalLightCount;
+    float4 _DirectionalLightColors[MAX_DIRECTIONAL_LIGHT_COUNT];
+    float4 _DirectionalLightDirections[MAX_DIRECTIONAL_LIGHT_COUNT];
+    float4 _DirectionalLightShadowData[MAX_DIRECTIONAL_LIGHT_COUNT];
+CBUFFER_END
+
+struct Light
 {
-    return saturate(dot(surface.normal, light.direction) * light.distanceAttenuation) * light.color;
+    float3 color;
+    float3 direction;
+    float attenuation;
+};
+
+int GetDirectionalLightCount()
+{
+    return _DirectionalLightCount;
 }
 
-float3 GetLighting(Surface surface, BRDF brdf, Light light)
+DirectionalShadowData GetDirectionalShadowData(int lightIndex)
 {
-    return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
+    DirectionalShadowData data;
+    data.strength = _DirectionalLightShadowData[lightIndex].x;
+    data.tileIndex = _DirectionalLightShadowData[lightIndex].y;
+    return data;
 }
 
-float3 GetLighting(Surface surface, float3 positionWS, BRDF brdf, CustomGI gi)
+Light GetDirectionalLight(int index, Surface surfaceWS)
 {
-    float3 color = 0.0f;
-
-    color += GetLighting(surface, brdf, GetMainLight());
-
-    int additionalLightCount = GetAdditionalLightsCount();
-    for (int i = 0; i < additionalLightCount; ++i)
-    {
-        Light addtionalLight = GetAdditionalLight(i, positionWS);
-        color += GetLighting(surface, brdf, addtionalLight);
-    }
-
-    color = gi.diffuse;
-    
-    return color;
+    Light light;
+    light.color = _DirectionalLightColors[index].rgb;
+    light.direction = _DirectionalLightDirections[index].xyz;
+    DirectionalShadowData shadowData = GetDirectionalShadowData(index);
+    light.attenuation = GetDirectionalShadowAttenuation(shadowData, surfaceWS);
+    return light;
 }
+
 #endif

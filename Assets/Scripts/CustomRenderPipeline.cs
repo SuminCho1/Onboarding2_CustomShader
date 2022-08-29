@@ -3,14 +3,27 @@ using UnityEngine.Rendering;
 
 public class CustomRenderPipeline : RenderPipeline
 {
-    private CameraRenderer renderer = new CameraRenderer();
+    private readonly CameraRenderer _renderer = new CameraRenderer();
+    private readonly bool _useDynamicBatching;
+    private readonly bool _useGPUInstancing;
+    private ShadowSettings _shadowSettings;
+    
+    public CustomRenderPipeline(bool useDynamicBatching, bool useGPUInstancing, 
+        bool useSRPBatcher, ShadowSettings shadowSettings)
+    {
+        _useDynamicBatching = useDynamicBatching;
+        _useGPUInstancing = useGPUInstancing;
+        _shadowSettings = shadowSettings;
+        GraphicsSettings.useScriptableRenderPipelineBatching = useSRPBatcher;
+        GraphicsSettings.lightsUseLinearIntensity = true;
+    }
     
     //렌더링에 필요하지 않은 오브젝트를 컬링한다. 모든 카메라에 해당한다
     protected override void Render(ScriptableRenderContext context, Camera[] cameras)
     {
         foreach (Camera camera in cameras)
         {
-            renderer.Render(context, camera);
+            _renderer.Render(context, camera, _useDynamicBatching, _useGPUInstancing, _shadowSettings);
         }
     }
 }

@@ -1,42 +1,52 @@
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 public class CameraRenderer
 {
-    private static ShaderTagId unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
-    private const string bufferName = "Render Camera";
+    private const string BufferName = "Render Camera";
     
-    //커스텀 렌더 파이프라인을 사용할 경우, 콘텍스트를 통하여 상태 업데이트를 스케쥴하고 제출하며 명령을 GPU에 그린다
-    //글로벌 쉐이더 속성, 렌더타겟 변경, 컴퓨트 쉐이더 전달 등의 역할을 한다.
-    //Submit을 하여 실제로 렌더 루프를 실행한다.
-    private ScriptableRenderContext context;
-    private Camera camera;
+    private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
+    private static ShaderTagId _litShaderTagId = new ShaderTagId("CustomLit");
     
-    //자주 쓰이는 명령이 아니라면 커맨드 버퍼에 따로 추가를 해주어야 한다.
-    private CommandBuffer buffer = new CommandBuffer { name = bufferName };
+    private CommandBuffer _buffer = new CommandBuffer { name = BufferName };
+    
+    private ScriptableRenderContext _context;
+    private Camera _camera;
 
-    private CullingResults cullingResults;
+    private CullingResults _cullingResults;
+
+    private Lighting _lighting = new Lighting();
     
-    public void Render(ScriptableRenderContext context, Camera camera)
+    public void Render(ScriptableRenderContext context, Camera camera, 
+        bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings)
     {
-        this.context = context;
-        this.camera = camera;
+        _context = context;
+        _camera = camera;
 
-        if (!Cull())
+        PrepareForSceneWindow();
+        
+        if (!Cull(shadowSettings.MaxDistance))
             return;
         
+        _buffer.BeginSample(BufferName);
+        ExecuteBuffer();
+        _lighting.Setup(context, _cullingResults, shadowSettings);
+        _buffer.EndSample(BufferName);
+        
         Setup();
-        
-        DrawVisibleGeometry();
-        
+        DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
+        DrawGizmos();
+        _lighting.Cleanup();
         Submit();
     }
 
-    private bool Cull()
+    private bool Cull(float maxShadowDistance)
     {
-        if (camera.TryGetCullingParameters(out var p))
+        if (_camera.TryGetCullingParameters(out ScriptableCullingParameters p))
         {
-            cullingResults = context.Cull(ref p);
+            p.shadowDistance = Mathf.Min(maxShadowDistance, _camera.farClipPlane);
+            _cullingResults = _context.Cull(ref p);
             return true;
         }
 
@@ -45,48 +55,62 @@ public class CameraRenderer
 
     private void Setup()
     {
-        //View Projection 맞춰줌, 그 외의 속성들도 적용시킴
-        context.SetupCameraProperties(camera);
-        
-        buffer.ClearRenderTarget(true, true, Color.clear);
-        
-        //프로파일러, 프레임 디버거에 디버그 샘플링 시작
-        buffer.BeginSample(bufferName);
-        
+        _context.SetupCameraProperties(_camera);
+        _buffer.ClearRenderTarget(true, true, Color.clear);
+        _buffer.BeginSample(BufferName);
         ExecuteBuffer();
     }
-    
+
     private void Submit()
     {
-        //디버그 샘플링 종료
-        buffer.EndSample(bufferName);
-        
+        _buffer.EndSample(BufferName);
         ExecuteBuffer();
-        
-        //큐잉 된 리스트를 보냄
-        context.Submit();
+        _context.Submit();
     }
 
+    private void DrawVisibleGeometry(bool useDynamicBatching, bool useGPUInstancing)
+    {
+        var sortingSettings = new SortingSettings();
+        var drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
+        {
+            enableDynamicBatching = useDynamicBatching,
+            enableInstancing = useGPUInstancing
+        };
+        drawingSettings.SetShaderPassName(1, _litShaderTagId);
+        
+        var filteringSettings = new FilteringSettings(RenderQueueRange.opaque);
+        
+        _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
+        
+        _context.DrawSkybox(_camera);
+
+        sortingSettings.criteria = SortingCriteria.CommonTransparent;
+        drawingSettings.sortingSettings = sortingSettings;
+        filteringSettings.renderQueueRange = RenderQueueRange.transparent;
+        
+        _context.DrawRenderers(_cullingResults, ref drawingSettings, ref filteringSettings);
+    }
+
+    private void DrawGizmos()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
+            _context.DrawGizmos(_camera, GizmoSubset.PreImageEffects);
+            _context.DrawGizmos(_camera, GizmoSubset.PostImageEffects);
+        }
+    }
+
+    private void PrepareForSceneWindow()
+    {
+        if (_camera.cameraType == CameraType.SceneView)
+        {
+            ScriptableRenderContext.EmitWorldGeometryForSceneView(_camera);
+        }
+    }
+    
     private void ExecuteBuffer()
     {
-        context.ExecuteCommandBuffer(buffer);
-        buffer.Clear();
-    }
-
-    private void DrawVisibleGeometry()
-    {
-        //어떤 쉐이더 패스를 사용할 것인지 세팅
-        var sortingSettings = new SortingSettings(camera);
-        // {
-        //     criteria = SortingCriteria.CommonOpaque
-        // };
-        var drawingSettings = new DrawingSettings(unlitShaderTagId, sortingSettings);
-        
-        //어떤 렌더 큐를 사용할 것인지 세팅
-        var filteringSettings = new FilteringSettings(RenderQueueRange.all);
-        
-        context.DrawRenderers(cullingResults, ref drawingSettings, ref filteringSettings);
-        
-        context.DrawSkybox(camera);
+        _context.ExecuteCommandBuffer(_buffer);
+        _buffer.Clear();
     }
 }

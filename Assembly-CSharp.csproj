@@ -41,17 +41,28 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
-     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
-     <Compile Include="Assets\Scripts\CameraRenderer.cs" />
+     <Compile Include="Assets\Scripts\MeshBall.cs" />
+     <Compile Include="Assets\Scripts\PerObjectMaterialProperties.cs" />
+     <Compile Include="Assets\Scripts\Lighting.cs" />
      <Compile Include="Assets\Scripts\CustomRenderPipelineAsset.cs" />
+     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
      <Compile Include="Assets\Scripts\CustomRenderPipeline.cs" />
+     <Compile Include="Assets\Scripts\CameraRenderer.cs" />
+     <Compile Include="Assets\Scripts\CustomShaderGUI.cs" />
+     <Compile Include="Assets\Scripts\ShadowSettings.cs" />
+     <Compile Include="Assets\Scripts\Shadows.cs" />
      <None Include="Assets\Shaders\CustomGI.hlsl" />
+     <None Include="Assets\Shaders\Common.hlsl" />
      <None Include="Assets\Shaders\BRDF.hlsl" />
+     <None Include="Assets\Shaders\CustomLight.hlsl" />
+     <None Include="Assets\Shaders\Shadows.hlsl" />
+     <None Include="Assets\Shaders\UnityInput.hlsl" />
      <None Include="Assets\Shaders\LitInput.hlsl" />
      <None Include="Assets\Shaders\CustomLit.shader" />
      <None Include="Assets\Shaders\Surface.hlsl" />
+     <None Include="Assets\Shaders\ShadowCasterPass.hlsl" />
      <None Include="Assets\Shaders\CustomLitForwardPass.hlsl" />
-     <None Include="Assets\Shaders\CustomLight.hlsl" />
+     <None Include="Assets\Shaders\CustomLighting.hlsl" />
      <Reference Include="UnityEngine">
      <HintPath>C:\Program Files\Unity\Hub\Editor\2021.3.8f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
      </Reference>
