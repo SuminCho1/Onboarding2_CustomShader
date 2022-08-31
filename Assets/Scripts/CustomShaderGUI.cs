@@ -4,6 +4,11 @@ using UnityEngine.Rendering;
 
 public class CustomShaderGUI : ShaderGUI
 {
+   private enum ShadowMode
+   {
+      On, Clip, Dither, Off
+   }
+   
    private MaterialEditor _editor;
    private Object[] _materials;
    private MaterialProperty[] _properties;
@@ -29,7 +34,18 @@ public class CustomShaderGUI : ShaderGUI
    private bool ZWrite {
       set => SetProperty("_ZWrite", value ? 1f : 0f);
    }
-   
+
+   private ShadowMode Shadows
+   {
+      set
+      {
+         if (SetProperty("_Shadows", (float)value))
+         {
+            SetKeyword("_SHADOWS_CLIP", value == ShadowMode.Clip);
+            SetKeyword("_SHADOWS_DITHER", value == ShadowMode.Dither);
+         }
+      }
+   }
    private RenderQueue RenderQueue {
       set {
          foreach (Material material in _materials) {
@@ -40,10 +56,14 @@ public class CustomShaderGUI : ShaderGUI
    
    public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
    {
+      EditorGUI.BeginChangeCheck();
+      
       base.OnGUI(materialEditor, properties);
       _editor = materialEditor;
       _materials = materialEditor.targets;
       _properties = properties;
+
+      BakedEmission();
       
       EditorGUILayout.Space();
       _showPresets = EditorGUILayout.Foldout(_showPresets, "Presets", true);
@@ -53,6 +73,21 @@ public class CustomShaderGUI : ShaderGUI
          ClipPreset();
          FadePreset();
          TransparentPreset();
+      }
+      
+      if(EditorGUI.EndChangeCheck())
+         SetShaderCasterPass();
+   }
+
+   private void BakedEmission()
+   {
+      EditorGUI.BeginChangeCheck();
+      _editor.LightmapEmissionProperty();
+
+      if (EditorGUI.EndChangeCheck())
+      {
+         foreach (Material m in _editor.targets)
+            m.globalIlluminationFlags &= ~MaterialGlobalIlluminationFlags.EmissiveIsBlack;
       }
    }
 
@@ -119,15 +154,22 @@ public class CustomShaderGUI : ShaderGUI
       }
    }
    
-   private void SetProperty(string name, float value)
+   private bool SetProperty(string name, float value)
    {
-      FindProperty(name, _properties).floatValue = value;
+      var property = FindProperty(name, _properties, false);
+      if (property != null)
+      {
+         property.floatValue = value;
+         return true;
+      }
+
+      return false;
    }
 
    private void SetProperty(string name, string keyword, bool value)
    {
-      SetProperty(name, value ? 1f : 0f);
-      SetKeyword(keyword, value);
+      if (SetProperty(name, value ? 1f : 0f)) 
+         SetKeyword(keyword, value);
    }
 
    private void SetKeyword(string keyword, bool enabled)
@@ -142,5 +184,17 @@ public class CustomShaderGUI : ShaderGUI
          foreach(Material material in _materials)
             material.DisableKeyword(keyword);
       }
+   }
+
+   private void SetShaderCasterPass()
+   {
+      var shadows = FindProperty("_Shadows", _properties, false);
+
+      if (shadows == null || shadows.hasMixedValue)
+         return;
+
+      bool enabled = shadows.floatValue < (float)ShadowMode.Off;
+      foreach(Material m in _materials)
+         m.SetShaderPassEnabled("ShadowCaster", enabled);
    }
 }

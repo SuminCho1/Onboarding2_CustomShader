@@ -3,8 +3,8 @@
 
 float3 IncomingLight(Surface surface, Light light)
 {
-    return saturate(dot(surface.normal, light.direction)) * light.attenuation
-        * light.color;
+    float nDotL = dot(surface.normal, light.direction);
+    return saturate(nDotL * light.attenuation) * light.color;
 }
 
 float3 GetLighting(Surface surface, BRDF brdf, Light light)
@@ -12,14 +12,17 @@ float3 GetLighting(Surface surface, BRDF brdf, Light light)
     return IncomingLight(surface, light) * DirectBRDF(surface, brdf, light);
 }
 
-float3 GetLighting(Surface surfaceWS, BRDF brdf)
+float3 GetLighting(Surface surfaceWS, BRDF brdf, CustomGI gi)
 {
-    float3 color = 0.0f;
+    ShadowData shadowData = GetShadowData(surfaceWS);
+
+    float3 color = gi.diffuse * brdf.diffuse;
 
     const int directionalLightCount = GetDirectionalLightCount();
-    for(int i = 0;i<directionalLightCount;++i)
+    for (int i = 0; i < directionalLightCount; ++i)
     {
-        color += GetLighting(surfaceWS, brdf, GetDirectionalLight(i, surfaceWS));
+        Light light = GetDirectionalLight(i, surfaceWS, shadowData);
+        color += GetLighting(surfaceWS, brdf, light);
     }
     return color;
 }

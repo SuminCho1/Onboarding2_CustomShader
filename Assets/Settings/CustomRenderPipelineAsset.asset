@@ -16,6 +16,14 @@ MonoBehaviour:
   useGPUInstancing: 1
   useSRPBatcher: 1
   shadows:
-    DirectionalTexture:
+    DirectionalData:
       AtlasSize: 1024
-    MaxDistance: 20.02
+      Filter: 1
+      CascadeCount: 4
+      CascadeRatio1: 0.124
+      CascadeRatio2: 0.25
+      CascadeRatio3: 0.622
+      CascadeFade: 0.175
+      CascadeBlend: 2
+    MaxDistance: 49.41
+    DistanceFade: 0.245

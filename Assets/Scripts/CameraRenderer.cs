@@ -74,7 +74,9 @@ public class CameraRenderer
         var drawingSettings = new DrawingSettings(_unlitShaderTagId, sortingSettings)
         {
             enableDynamicBatching = useDynamicBatching,
-            enableInstancing = useGPUInstancing
+            enableInstancing = useGPUInstancing,
+            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe |
+                            PerObjectData.LightProbeProxyVolume
         };
         drawingSettings.SetShaderPassName(1, _litShaderTagId);
         
