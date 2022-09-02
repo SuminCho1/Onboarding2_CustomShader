@@ -831,6 +831,15 @@
      <Reference Include="Unity.VisualScripting.State">
      <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
      </Reference>
+     <Reference Include="Kino.Aqua.Runtime">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Runtime.dll</HintPath>
+     </Reference>
+     <Reference Include="Kino.Aqua.Universal.Runtime">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Universal.Runtime.dll</HintPath>
+     </Reference>
+     <Reference Include="Kino.Aqua.Universal.Editor">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Universal.Editor.dll</HintPath>
+     </Reference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp.csproj">

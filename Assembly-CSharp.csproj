@@ -53,12 +53,19 @@
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
      <Compile Include="Assets\Scripts\CustomRenderPipeline.cs" />
      <Compile Include="Assets\Scripts\CameraRenderer.cs" />
+     <Compile Include="Assets\Scripts\CustomRenderPass.cs" />
+     <Compile Include="Assets\Scripts\CustomRendererFeature.cs" />
      <None Include="Assets\Shaders\CustomGI.hlsl" />
      <None Include="Assets\Shaders\Common.hlsl" />
      <None Include="Assets\Shaders\PostFxStack.shader" />
+     <None Include="Assets\Shaders\AquaFilter.hlsl" />
      <None Include="Assets\Shaders\BRDF.hlsl" />
      <None Include="Assets\Shaders\CustomLight.hlsl" />
      <None Include="Assets\Shaders\Shadows.hlsl" />
+     <None Include="Assets\Shaders\BoxBlur.shader" />
+     <None Include="Assets\Shaders\Blur.hlsl" />
+     <None Include="Assets\Shaders\AquaColor.shader" />
+     <None Include="Assets\Shaders\AquaColor.hlsl" />
      <None Include="Assets\Shaders\UnityInput.hlsl" />
      <None Include="Assets\Shaders\LitInput.hlsl" />
      <None Include="Assets\Shaders\MetaPass.hlsl" />
@@ -805,6 +812,15 @@
      </Reference>
      <Reference Include="Unity.VisualScripting.State">
      <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Unity.VisualScripting.State.dll</HintPath>
+     </Reference>
+     <Reference Include="Kino.Aqua.Runtime">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Runtime.dll</HintPath>
+     </Reference>
+     <Reference Include="Kino.Aqua.Universal.Runtime">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Universal.Runtime.dll</HintPath>
+     </Reference>
+     <Reference Include="Kino.Aqua.Universal.Editor">
+     <HintPath>C:\Projects\Onboarding2\Library\ScriptAssemblies\Kino.Aqua.Universal.Editor.dll</HintPath>
      </Reference>
   </ItemGroup>
   <ItemGroup>
