@@ -46,6 +46,8 @@
      <Compile Include="Assets\Scripts\Lighting.cs" />
      <Compile Include="Assets\Scripts\CustomShaderGUI.cs" />
      <Compile Include="Assets\Scripts\ShadowSettings.cs" />
+     <Compile Include="Assets\Scripts\PostFXSettings.cs" />
+     <Compile Include="Assets\Scripts\PostFXStack.cs" />
      <Compile Include="Assets\Scripts\CustomRenderPipelineAsset.cs" />
      <Compile Include="Assets\Scripts\Shadows.cs" />
      <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
@@ -53,12 +55,14 @@
      <Compile Include="Assets\Scripts\CameraRenderer.cs" />
      <None Include="Assets\Shaders\CustomGI.hlsl" />
      <None Include="Assets\Shaders\Common.hlsl" />
+     <None Include="Assets\Shaders\PostFxStack.shader" />
      <None Include="Assets\Shaders\BRDF.hlsl" />
      <None Include="Assets\Shaders\CustomLight.hlsl" />
      <None Include="Assets\Shaders\Shadows.hlsl" />
      <None Include="Assets\Shaders\UnityInput.hlsl" />
      <None Include="Assets\Shaders\LitInput.hlsl" />
      <None Include="Assets\Shaders\MetaPass.hlsl" />
+     <None Include="Assets\Shaders\PostFXStackPasses.hlsl" />
      <None Include="Assets\Shaders\CustomLit.shader" />
      <None Include="Assets\Shaders\Surface.hlsl" />
      <None Include="Assets\Shaders\ShadowCasterPass.hlsl" />

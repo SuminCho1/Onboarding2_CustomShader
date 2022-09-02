@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -8,18 +9,19 @@ public class CameraRenderer
     
     private static ShaderTagId _unlitShaderTagId = new ShaderTagId("SRPDefaultUnlit");
     private static ShaderTagId _litShaderTagId = new ShaderTagId("CustomLit");
-    
+
+    private static int FrameBufferId = Shader.PropertyToID("_CameraFrameBuffer");
+
     private CommandBuffer _buffer = new CommandBuffer { name = BufferName };
-    
     private ScriptableRenderContext _context;
     private Camera _camera;
-
     private CullingResults _cullingResults;
-
     private Lighting _lighting = new Lighting();
+    private PostFXStack _postFXStack = new PostFXStack();
     
     public void Render(ScriptableRenderContext context, Camera camera, 
-        bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings)
+        bool useDynamicBatching, bool useGPUInstancing, ShadowSettings shadowSettings,
+        PostFXSettings postFXSettings)
     {
         _context = context;
         _camera = camera;
@@ -32,13 +34,35 @@ public class CameraRenderer
         _buffer.BeginSample(BufferName);
         ExecuteBuffer();
         _lighting.Setup(context, _cullingResults, shadowSettings);
+        _postFXStack.Setup(context, camera, postFXSettings);
         _buffer.EndSample(BufferName);
         
         Setup();
         DrawVisibleGeometry(useDynamicBatching, useGPUInstancing);
-        DrawGizmos();
-        _lighting.Cleanup();
+        
+        DrawGizmosBeforeFX();
+
+        CameraClearFlags flags = _camera.clearFlags;
+        if (_postFXStack.IsActive)
+        {
+            if (flags > CameraClearFlags.Color)
+                flags = CameraClearFlags.Color;
+            
+            _postFXStack.Render(FrameBufferId);
+        }
+        
+        DrawGizmosAfterFX();
+        
+        Cleanup();
+
         Submit();
+    }
+
+    private void Cleanup()
+    {
+        _lighting.Cleanup();
+        if(_postFXStack.IsActive)
+            _buffer.ReleaseTemporaryRT(FrameBufferId);
     }
 
     private bool Cull(float maxShadowDistance)
@@ -56,6 +80,17 @@ public class CameraRenderer
     private void Setup()
     {
         _context.SetupCameraProperties(_camera);
+
+        if (_postFXStack.IsActive)
+        {
+            _buffer.GetTemporaryRT(FrameBufferId, _camera.pixelWidth,
+                _camera.pixelHeight, 32, FilterMode.Bilinear,
+                RenderTextureFormat.Default);
+            
+            _buffer.SetRenderTarget(FrameBufferId, 
+                RenderBufferLoadAction.DontCare, RenderBufferStoreAction.Store);
+        }
+        
         _buffer.ClearRenderTarget(true, true, Color.clear);
         _buffer.BeginSample(BufferName);
         ExecuteBuffer();
@@ -75,7 +110,8 @@ public class CameraRenderer
         {
             enableDynamicBatching = useDynamicBatching,
             enableInstancing = useGPUInstancing,
-            perObjectData = PerObjectData.Lightmaps | PerObjectData.LightProbe |
+            perObjectData = PerObjectData.ReflectionProbes |
+                            PerObjectData.Lightmaps | PerObjectData.LightProbe |
                             PerObjectData.LightProbeProxyVolume
         };
         drawingSettings.SetShaderPassName(1, _litShaderTagId);
@@ -98,6 +134,22 @@ public class CameraRenderer
         if (Handles.ShouldRenderGizmos())
         {
             _context.DrawGizmos(_camera, GizmoSubset.PreImageEffects);
+            _context.DrawGizmos(_camera, GizmoSubset.PostImageEffects);
+        }
+    }
+
+    private void DrawGizmosBeforeFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
+            _context.DrawGizmos(_camera, GizmoSubset.PreImageEffects);
+        }
+    }
+
+    private void DrawGizmosAfterFX()
+    {
+        if (Handles.ShouldRenderGizmos())
+        {
             _context.DrawGizmos(_camera, GizmoSubset.PostImageEffects);
         }
     }

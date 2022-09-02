@@ -2,7 +2,6 @@ Shader "Custom/Lit"
 {
     Properties
     {
-//        [HideInInspector] _SampleGI("SampleGI", float) = 0.0 // needed from bakedlit
         _BaseMap("Texture", 2D) = "white" {}
         _BaseColor("Color", Color) = (1, 1, 1, 1)
         _Cutoff("AlphaCutout", Range(0.0, 1.0)) = 0.5
@@ -11,7 +10,8 @@ Shader "Custom/Lit"
         [Toggle(_PREMULTIPLY_ALPHA)] _PremulAlpha ("Premultiply Alpha", Float) = 0
 
         _Metallic("Metallic", Range(0,1)) = 0
-        _Smoothness("Smoothness", Range(0,1)) =0.5
+        _Smoothness("Smoothness", Range(0,1)) = 0.5
+        _Fresnel("Fresnel", Range(0, 1)) = 1
         
         [NoScaleOffset] _EmissionMap("Emission", 2D) = "white" {}
         [HDR] _EmissionColor("Emission", Color) = (0.0, 0.0, 0.0, 0.0)
@@ -42,13 +42,6 @@ Shader "Custom/Lit"
             
             HLSLPROGRAM
             #pragma target 3.5
-            
-            // // -------------------------------------
-            // // Unity defined keywords
-            // #pragma multi_compile _ DOTS_INSTANCING_ON
-            // #pragma multi_compile_fragment _ _SCREEN_SPACE_OCCLUSION
-            // #pragma multi_compile_fragment _ _DBUFFER_MRT1 _DBUFFER_MRT2 _DBUFFER_MRT3
-            // #pragma multi_compile _ DEBUG_DISPLAY
 
             #pragma shader_feature _CLIPPING
             #pragma shader_feature _PREMULTIPLY_ALPHA
@@ -56,6 +49,7 @@ Shader "Custom/Lit"
             #pragma multi_compile _ _CASCADE_BLEND_SOFT _CASCADE_BLEND_DITHER
             #pragma multi_compile _ LIGHTMAP_ON
             #pragma multi_compile_instancing
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma vertex LitPassVertex
             #pragma fragment LitPassFragment
 
@@ -78,6 +72,7 @@ Shader "Custom/Lit"
             #pragma target 3.5
             #pragma shader_feature _ _SHADOWS_CLIP _SHADOWS_DITHER
             #pragma multi_compile_instancing
+			#pragma multi_compile _ LOD_FADE_CROSSFADE
             #pragma vertex ShadowCasterPassVertex
             #pragma fragment ShadowCasterPassFragment
             #include "Assets/Shaders/ShadowCasterPass.hlsl"
