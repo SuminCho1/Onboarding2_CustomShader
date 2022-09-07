@@ -17,7 +17,7 @@ struct Light
     float attenuation;
 };
 
-int GetDirectionalLightCount()
+int GetLightCount()
 {
     return _DirectionalLightCount;
 }
@@ -31,7 +31,7 @@ DirectionalShadowData GetDirectionalShadowData(int lightIndex, ShadowData shadow
     return data;
 }
 
-Light GetDirectionalLight(int index, Surface surfaceWS, ShadowData shadowData)
+Light GetAddtionalLight(int index, Surface surfaceWS, ShadowData shadowData)
 {
     Light light;
     light.color = _DirectionalLightColors[index].rgb;

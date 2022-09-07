@@ -2,3 +2,9 @@ Library/
 Temp/
 Logs/
 .idea/
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp.csproj
+obj/
+Onboarding2.sln
+Onboarding2.sln.DotSettings.user
+UserSettings/

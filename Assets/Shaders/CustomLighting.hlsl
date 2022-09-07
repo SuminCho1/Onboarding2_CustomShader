@@ -18,10 +18,10 @@ float3 GetLighting(Surface surfaceWS, BRDF brdf, CustomGI gi)
 
     float3 color = IndirectBRDF(surfaceWS, brdf, gi.diffuse, gi.specular);
     
-    const int directionalLightCount = GetDirectionalLightCount();
-    for (int i = 0; i < directionalLightCount; ++i)
+    const int lightCount = GetLightCount();
+    for (int i = 0; i < lightCount; ++i)
     {
-        Light light = GetDirectionalLight(i, surfaceWS, shadowData);
+        Light light = GetAddtionalLight(i, surfaceWS, shadowData);
         color += GetLighting(surfaceWS, brdf, light);
     }
     return color;

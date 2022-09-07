@@ -25,7 +25,6 @@ struct AquaFilter
     float hueShift;
 
     // Basic math function
-
     float2 Rotate90(float2 v)
     {
         return v.yx * float2(-1, 1);
@@ -55,39 +54,34 @@ struct AquaFilter
         return SAMPLE_TEXTURE2D(inputTexture, s_linear_clamp_sampler, SC2UV(p)).rgb;
     }
 
-    float Luminance(real3 linearRgb)
-    {
-        return dot(linearRgb, real3(0.2126729, 0.7151522, 0.0721750));
-    }
-    
-    float SampleLuminance(float2 p)
-    {
-        return Luminance(SampleColor(p));
-    }
-
     float3 SampleNoise(float2 p)
     {
         return SAMPLE_TEXTURE2D(noiseTexture, default_sampler_Linear_Repeat, p).rgb;
     }
 
     // Gradient function
-
-    float2 GetGradient(float2 p, float freq)
+    float2 GetGradient(float2 screenCoord, float freq)
     {
         const float2 dx = float2(interval / 200, 0);
-        float ldx = SampleLuminance(p + dx.xy) - SampleLuminance(p - dx.xy);
-        float ldy = SampleLuminance(p + dx.yx) - SampleLuminance(p - dx.yx);
-        float2 n = SampleNoise(p * 0.4 * freq).gb - 0.5;
-        return float2(ldx, ldy) + n * 0.05;
+
+        //x축의 변화량
+        float ldx = SampleColor(screenCoord + dx.xy) - SampleColor(screenCoord - dx.xy);
+
+        //y축의 변화량
+        float ldy = SampleColor(screenCoord + dx.yx) - SampleColor(screenCoord - dx.yx);
+
+        float2 noise = SampleNoise(screenCoord * 0.4 * freq).gb - 0.5;
+        
+        return float2(ldx, ldy) + noise * 0.05;
     }
 
-    // Edge / fill processing functions
-    float ProcessEdge(inout float2 p, float stride)
+    //외곽선 반환
+    float ProcessEdge(inout float2 screenCoord, float stride)
     {
-        float2 grad = GetGradient(p, 1);
-        float edge = saturate(length(grad) * 10);
-        float pattern = SampleNoise(p * 0.8).r;
-        p += normalize(Rotate90(grad)) * stride;
+        float2 gradient = GetGradient(screenCoord, 1);
+        float edge = saturate(length(gradient) * 10);
+        float pattern = SampleNoise(screenCoord * 0.8).r;
+        screenCoord += normalize(Rotate90(gradient)) * stride;
         return pattern * edge;
     }
 
@@ -100,18 +94,18 @@ struct AquaFilter
     
     float3 ProcessFill(inout float2 p, float stride)
     {
-        float2 grad = GetGradient(p, blurFrequency);
-        p += normalize(grad) * stride;
+        float2 gradient = GetGradient(p, blurFrequency);
+        p += normalize(gradient) * stride;
         float shift = SampleNoise(p * 0.1).r * 2;
         return SampleColor(p) * HsvToRgb(float3(shift, hueShift, 1));
     }
 
     // Main filter function
-
     float3 ProcessAt(float2 uv)
     {
         // Gradient oriented blur effect
 
+        //uv를 스크린 좌표로 변환
         float2 p = UV2SC(uv);
 
         float2 p_e_n = p;
@@ -140,14 +134,12 @@ struct AquaFilter
         }
 
         // Normalization and contrast
-
         acc_e /= sum_e;
         acc_c /= sum_c;
 
         acc_e = saturate((acc_e - 0.5) * edgeContrast + 0.5);
 
         // Color blending
-
         float3 rgb_e = lerp(1, edgeColor.rgb, edgeColor.a * acc_e);
         float3 rgb_f = lerp(1, acc_c, fillColor.a) * fillColor.rgb;
 
@@ -158,8 +150,8 @@ struct AquaFilter
 float3 LinearToSRGB(float3 c)
 {
     float3 sRGBLo = c * 12.92;
-    float3 sRGBHi = (PositivePow(c, float3(1.0/2.4, 1.0/2.4, 1.0/2.4)) * 1.055) - 0.055;
-    float3 sRGB   = (c <= 0.0031308) ? sRGBLo : sRGBHi;
+    float3 sRGBHi = (PositivePow(c, float3(1.0 / 2.4, 1.0 / 2.4, 1.0 / 2.4)) * 1.055) - 0.055;
+    float3 sRGB = (c <= 0.0031308) ? sRGBLo : sRGBHi;
     return sRGB;
 }
 
@@ -168,9 +160,9 @@ float3 SRGBToLinear(float3 c)
     #if defined(UNITY_COLORSPACE_GAMMA) && REAL_IS_HALF
     c = min(c, 100.0); // Make sure not to exceed HALF_MAX after the pow() below
     #endif
-    float3 linearRGBLo  = c / 12.92;
-    float3 linearRGBHi  = PositivePow((c + 0.055) / 1.055, float3(2.4, 2.4, 2.4));
-    float3 linearRGB    = (c <= 0.04045) ? linearRGBLo : linearRGBHi;
+    float3 linearRGBLo = c / 12.92;
+    float3 linearRGBHi = PositivePow((c + 0.055) / 1.055, float3(2.4, 2.4, 2.4));
+    float3 linearRGB = (c <= 0.04045) ? linearRGBLo : linearRGBHi;
     return linearRGB;
 }
 

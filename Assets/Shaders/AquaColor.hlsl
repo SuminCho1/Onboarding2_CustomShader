@@ -47,8 +47,8 @@ float4 PassFragment(Varyings input) : SV_TARGET
     uint width, height;
     _MainTex.GetDimensions(width, height);
     
-    aqua.aspectRatio = (float)width / height;
-    aqua.aspectRatioRcp = 1 / aqua.aspectRatio;
+    aqua.aspectRatio = width / (float)height;
+    aqua.aspectRatioRcp = 1.0 / aqua.aspectRatio;
     
     aqua.iteration = _Iteration;
     aqua.iterationRcp = 1.0 / _Iteration;
@@ -58,7 +58,7 @@ float4 PassFragment(Varyings input) : SV_TARGET
     aqua.blurFrequency = _BlurFrequency;
     aqua.edgeContrast  = _EdgeContrast;
     aqua.hueShift      = _HueShift;
-    
+
     float3 output = aqua.ProcessAt(input.uv);
     output = LinearToSRGB(output);
     output = SRGBToLinear(output);

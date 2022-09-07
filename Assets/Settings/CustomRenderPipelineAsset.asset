@@ -18,13 +18,13 @@ MonoBehaviour:
   shadows:
     DirectionalData:
       AtlasSize: 1024
-      Filter: 1
+      Filter: 2
       CascadeCount: 4
-      CascadeRatio1: 0.124
-      CascadeRatio2: 0.25
-      CascadeRatio3: 0.622
-      CascadeFade: 0.175
+      CascadeRatio1: 0.211
+      CascadeRatio2: 0.478
+      CascadeRatio3: 0.763
+      CascadeFade: 1
       CascadeBlend: 2
     MaxDistance: 49.41
-    DistanceFade: 0.245
-  postFXSettings: {fileID: 11400000, guid: d276824a0ef115643be99cd193955c8b, type: 2}
+    DistanceFade: 0.325
+  postFXSettings: {fileID: 0}
